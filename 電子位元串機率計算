@@ -1,0 +1,68 @@
+#include <iostream>
+#include <vector>
+#include <unordered_map>
+#include <iomanip>
+
+using namespace std;
+
+// 使用結構體來簡化狀態表示
+struct State {
+    int pos;
+    int consecutiveOnes;
+
+    bool operator==(const State& other) const {
+        return pos == other.pos && consecutiveOnes == other.consecutiveOnes;
+    }
+};
+struct StateHash {
+    size_t operator()(const State& s) const {
+        return hash<int>()(s.pos) ^ hash<int>()(s.consecutiveOnes);
+    }
+};
+
+// 記憶化結構來儲存子問題結果
+unordered_map<State, double, StateHash> memo;
+
+// 遞迴函式，計算不包含連續 k 個 1 的機率
+double calculateProbabilityDP(int pos, int consecutiveOnes, int n, int k, const vector<double>& probabilities) {
+    if (consecutiveOnes >= k) return 0.0;  // 已達到 k 個連續的 1，直接返回 0
+    if (pos == n) return 1.0;  // 走完所有節點且未達到 k 個連續的 1
+
+    // 建立狀態
+    State currentState = {pos, consecutiveOnes};
+    if (memo.find(currentState) != memo.end()) return memo[currentState];
+
+    // 選擇包括或不包括當前位元為 1 的情況
+    double includeOne = probabilities[pos] * calculateProbabilityDP(pos + 1, consecutiveOnes + 1, n, k, probabilities);
+    double excludeOne = (1 - probabilities[pos]) * calculateProbabilityDP(pos + 1, 0, n, k, probabilities);
+
+    memo[currentState] = includeOne + excludeOne;
+    return memo[currentState];
+}
+
+double calculateProbability(int n, int k, const vector<double>& probabilities) {
+    memo.clear();
+    return calculateProbabilityDP(0, 0, n, k, probabilities);
+}
+
+int main() {
+    int n, k;
+    cout << "輸入字串的長度 n 和連續 1 的限制 k：";
+    while (cin >> n >> k) {
+        if (n == 0) break;
+
+        vector<double> probabilities(n);
+        cout << "輸入每個位元出現 1 的機率（共 " << n << " 個）：\n";
+        for (int i = 0; i < n; ++i) {
+            cout << "第 " << i + 1 << " 位的機率：";
+            cin >> probabilities[i];
+        }
+
+        double result = calculateProbability(n, k, probabilities);
+        cout << "不包含 " << k << " 個或以上連續 1 的概率為：" << fixed << setprecision(5) << result << endl;
+        cout << "\n輸入字串的長度 n 和連續 1 的限制 k（或輸入 0 結束程式）：";
+    }
+
+    cout << "程式已結束。\n";
+    return 0;
+}
