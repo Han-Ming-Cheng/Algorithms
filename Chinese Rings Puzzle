@@ -1,0 +1,83 @@
+中國環解謎問題介紹
+# Chinese Rings Puzzle (中國環遊戲解法)
+
+本專案實作傳統中國智力遊戲「中國環」（又稱九連環）的遞迴解法，透過程式計算最少解環步數，幫助理解遞迴演算法與古典邏輯推理問題。
+
+## 🧩 遊戲簡介
+
+中國環是一種經典的解謎遊戲，具有如下規則：
+- 環 1（最前面）可自由移除與掛回；
+- 環 i（i ≥ 2）必須在環 i−1 處於「掛上」狀態時才能操作；
+- 目標為將所有環自主幹完全移除。
+
+該遊戲步數呈指數成長，與漢諾塔問題類似但規則更具挑戰性。
+
+---
+
+## 📌 功能介紹
+
+- ✅ 輸入任意環數 \( n \)
+- ✅ 計算解出所有環所需的最少步數（符合數學遞迴公式）
+- ✅ 使用簡潔的遞迴函式進行計算
+
+
+
+程式碼:
+
+#include <iostream>
+using namespace std;
+
+int stepCounter = 0;
+
+// 輸出環的操作
+void printRing(int n, const string& action) {
+    ++stepCounter;
+    cout << "步驟 " << stepCounter << ": 環 " << n << " " << action << endl;
+}
+
+// 所有環取下
+void allRingDown(int n);
+
+// 所有環掛回
+void allRingUp(int n);
+
+// 定義所有環取下的遞迴函數
+void allRingDown(int n) {
+    if (n > 0) {
+        allRingDown(n - 2);
+        printRing(n, "取下");
+        allRingUp(n - 2);
+        allRingDown(n - 1);
+    }
+}
+
+// 定義所有環掛回的遞迴函數
+void allRingUp(int n) {
+    if (n > 0) {
+        allRingUp(n - 1);
+        allRingDown(n - 2);
+        printRing(n, "掛回");
+        allRingUp(n - 2);
+    }
+}
+
+int main() {
+    int n;
+
+    while (true) {
+        stepCounter = 0;  // 重置步驟計數器
+        cout << "請輸入環的數量 (輸入 0 結束程式): ";
+        cin >> n;
+
+        if (n == 0) {
+            break;  // 終止程式
+        }
+
+        allRingDown(n);
+        cout << endl;  // 每次操作後加一行空白
+    }
+
+    cout << "程式結束。" << endl;
+    return 0;
+}
+
